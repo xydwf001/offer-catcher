@@ -96,6 +96,10 @@
             <span class="metric-label">初筛命中率</span>
             <strong id="screen-score">--</strong>
           </div>
+          <div>
+            <span class="metric-label">岗位源</span>
+            <strong id="source-status">连接中</strong>
+          </div>
         </div>
 
         <section id="matches" class="module" aria-labelledby="matches-title">
@@ -103,9 +107,12 @@
             <div>
               <p class="section-label">岗位匹配</p>
               <h2 id="matches-title">推荐清单</h2>
-              <p>按岗位方向、技能覆盖、城市偏好和简历证据排序，先投最值得准备的机会。</p>
+              <p id="job-source-note">正在拉取公开岗位源，并按你的画像重新排序。</p>
             </div>
-            <span id="analysis-status" class="status-pill">已载入示例</span>
+            <div class="module-actions">
+              <span id="analysis-status" class="status-pill">连接岗位源</span>
+              <button id="refresh-jobs" class="small-button" type="button">刷新岗位</button>
+            </div>
           </div>
           <div id="job-list" class="job-list"></div>
         </section>

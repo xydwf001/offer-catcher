@@ -366,7 +366,7 @@ input::placeholder {
 
 .summary-strip {
   display: grid;
-  grid-template-columns: minmax(220px, 1.5fr) minmax(120px, 0.7fr) minmax(140px, 0.75fr);
+  grid-template-columns: minmax(220px, 1.5fr) minmax(120px, 0.6fr) minmax(140px, 0.7fr) minmax(160px, 0.8fr);
   overflow: hidden;
 }
 
@@ -415,6 +415,14 @@ input::placeholder {
   font-size: 0.92rem;
 }
 
+.module-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .status-pill,
 .tag {
   display: inline-flex;
@@ -433,6 +441,25 @@ input::placeholder {
   white-space: nowrap;
 }
 
+.small-button {
+  min-height: 32px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--canvas);
+  color: var(--ink);
+  padding: 0 11px;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.small-button:hover {
+  background: var(--surface);
+}
+
+.small-button:disabled {
+  opacity: 0.55;
+}
+
 .job-list {
   display: grid;
   gap: 10px;
@@ -448,6 +475,7 @@ input::placeholder {
   border-radius: var(--radius);
   background: var(--canvas);
   text-align: left;
+  cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
 }
 
@@ -561,6 +589,68 @@ input::placeholder {
   gap: 8px;
   margin-top: 14px;
   margin-left: 45px;
+}
+
+.job-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  margin-left: 45px;
+}
+
+.source-link {
+  display: inline-flex;
+  width: max-content;
+  color: var(--primary-strong);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.source-link:hover {
+  text-decoration: underline;
+}
+
+.analyze-button {
+  min-height: 32px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--canvas);
+  color: var(--ink);
+  padding: 0 11px;
+  font-size: 0.78rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.analyze-button:hover {
+  border-color: var(--primary);
+  color: var(--primary-strong);
+}
+
+.empty-state {
+  padding: 28px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+}
+
+.empty-state h3 {
+  margin-bottom: 8px;
+}
+
+.empty-state p,
+.empty-copy {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.empty-state a {
+  display: inline-flex;
+  margin-top: 8px;
+  color: var(--primary-strong);
+  font-weight: 850;
 }
 
 .fit-item {
@@ -757,7 +847,8 @@ input::placeholder {
 
   .job-summary,
   .tags,
-  .fit-grid {
+  .fit-grid,
+  .job-actions {
     margin-left: 0;
   }
 
