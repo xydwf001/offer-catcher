@@ -92,6 +92,12 @@ const toast = document.querySelector("#toast");
 let selectedJobId = jobs[0].id;
 let latestRecommendations = [];
 
+function describeScore(score) {
+  if (score >= 80) return "优先投递";
+  if (score >= 60) return "值得准备";
+  return "谨慎备选";
+}
+
 function normalizeText(value) {
   return value.toLowerCase().replace(/[，。；、]/g, " ");
 }
@@ -204,7 +210,7 @@ function buildActions(job, candidate, resumeScore) {
 function renderJobs(recommendations, candidate) {
   jobList.innerHTML = "";
 
-  recommendations.forEach((job) => {
+  recommendations.forEach((job, index) => {
     const card = document.createElement("button");
     card.type = "button";
     card.className = `job-card${job.id === selectedJobId ? " is-selected" : ""}`;
@@ -220,13 +226,20 @@ function renderJobs(recommendations, candidate) {
       .join("");
 
     card.innerHTML = `
-      <div>
-        <h3>${job.title}</h3>
-        <p class="job-meta">${job.company} · ${job.city} · ${job.summary}</p>
+      <div class="job-main">
+        <div class="job-title-row">
+          <span class="rank-badge">${String(index + 1).padStart(2, "0")}</span>
+          <div>
+            <h3>${job.title}</h3>
+            <p class="job-meta">${job.company} · ${job.city}</p>
+          </div>
+        </div>
+        <p class="job-summary">${job.summary}</p>
         <div class="tags">${tags || '<span class="tag missing">待补充关键词</span>'}</div>
         <div class="fit-grid">${fitItems}</div>
       </div>
       <div class="score-block">
+        <span class="score-caption">${describeScore(job.score)}</span>
         <span class="score-number">${job.score}</span>
         <span class="score-bar" aria-label="匹配分 ${job.score}">
           <span style="--value: ${job.score}%"></span>

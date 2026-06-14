@@ -23,18 +23,23 @@
         <a href="#matches">岗位匹配</a>
         <a href="#resume">简历诊断</a>
         <a href="#strategy">投递策略</a>
-        <a href="docs/offer-catcher-solution.pdf">方案 PDF</a>
       </nav>
+      <span class="header-chip">公开 Demo</span>
     </header>
 
     <main id="top" class="workspace">
       <section class="input-panel" aria-labelledby="profile-title">
         <div class="panel-heading">
-          <p class="section-label">输入画像</p>
+          <p class="section-label">Offer 捕手工作台</p>
           <h1 id="profile-title">把简历和目标岗位放到同一张桌面上。</h1>
           <p>
             输入你的背景、偏好和简历文本，智能体会给出岗位优先级、初筛命中率和可执行的简历修改建议。
           </p>
+          <div class="capability-row" aria-label="核心能力">
+            <span>岗位排序</span>
+            <span>命中率诊断</span>
+            <span>简历改写方向</span>
+          </div>
         </div>
 
         <form id="profile-form" class="profile-form">
@@ -98,6 +103,7 @@
             <div>
               <p class="section-label">岗位匹配</p>
               <h2 id="matches-title">推荐清单</h2>
+              <p>按岗位方向、技能覆盖、城市偏好和简历证据排序，先投最值得准备的机会。</p>
             </div>
             <span id="analysis-status" class="status-pill">已载入示例</span>
           </div>
@@ -122,6 +128,7 @@
             <div>
               <p class="section-label">投递策略</p>
               <h2 id="strategy-title">智能体行动记录</h2>
+              <p>保留每一步判断依据，便于你把匹配结果写进投递计划。</p>
             </div>
           </div>
           <ol id="agent-log" class="agent-log"></ol>
