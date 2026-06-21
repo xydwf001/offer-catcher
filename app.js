@@ -721,8 +721,8 @@ function render(candidate = readCandidate()) {
   latestRecommendations = recommendations;
   const visibleRecommendations = recommendations.slice(0, visibleJobLimit);
 
-  if (!recommendations.some((job) => job.id === selectedJobId)) {
-    selectedJobId = recommendations[0].id;
+  if (!visibleRecommendations.some((job) => job.id === selectedJobId)) {
+    selectedJobId = visibleRecommendations[0]?.id || recommendations[0].id;
   }
 
   const selectedJob = recommendations.find((job) => job.id === selectedJobId) || recommendations[0];
