@@ -4,12 +4,12 @@
 
 ## What It Does
 
-- 通过 Remotive 官方公开岗位 API 拉取实时远程岗位，再根据学生画像、目标方向、城市偏好和简历文本推荐岗位。
+- 读取腾讯招聘官网的校园与实习岗位快照，并提供字节跳动、阿里巴巴、美团、百度、京东、华为官方校招入口。
 - 解释岗位匹配分，包括技能、兴趣、城市、简历证据和竞争风险。
 - 计算简历初筛命中率，并指出关键词、项目证据和量化表达缺口。
 - 生成可复制的简历优化建议和投递策略。
 - 展示岗位来源、发布时间和原始岗位链接。
-- 点击岗位卡片直接打开 Remotive 提供的真实职位详情；接口失败时不展示模拟岗位。
+- 点击岗位卡片直接打开腾讯招聘官网或腾讯 Workday 正式申请页；接口失败时不展示模拟岗位。
 
 ## Run Locally
 
@@ -25,6 +25,8 @@ Open `http://localhost:4173`.
 - Solution note: `docs/solution.md`
 - PDF: `docs/offer-catcher-solution.pdf`
 - GitHub Pages source: `main` branch, `/` root folder
+- Official job updater: `scripts/update_tencent_jobs.py`
+- Scheduled updater: `.github/workflows/update-jobs.yml` (every 6 hours + manual run)
 
 ## Deploy
 

@@ -1,6 +1,16 @@
-const REMOTIVE_API = "https://remotive.com/api/remote-jobs";
-const CACHE_KEY = "offer-catcher-live-jobs-v2";
+const JOBS_DATA_URL = "data/tencent-jobs.json";
+const CACHE_KEY = "offer-catcher-china-jobs-v4";
 const CACHE_TTL = 1000 * 60 * 60 * 6;
+
+const CHINA_CAREER_PORTALS = [
+  { company: "腾讯", url: "https://careers.tencent.com/" },
+  { company: "字节跳动", url: "https://jobs.bytedance.com/campus/position" },
+  { company: "阿里巴巴", url: "https://talent.alibaba.com/campus/position-list" },
+  { company: "美团", url: "https://zhaopin.meituan.com/web/campus" },
+  { company: "百度", url: "https://talent.baidu.com/jobs/list" },
+  { company: "京东", url: "https://campus.jd.com/" },
+  { company: "华为", url: "https://career.huawei.com/reccampportal/portal5/index.html" },
+];
 
 const defaults = {
   profile:
@@ -20,10 +30,54 @@ const roleLabels = {
 };
 
 const roleTags = {
-  data: ["data analyst", "data science", "analytics", "sql", "python", "business intelligence"],
-  "ai-product": ["ai product", "product manager", "machine learning", "prompt", "user research"],
-  frontend: ["frontend", "front end", "react", "javascript", "typescript", "css"],
-  growth: ["growth", "marketing", "user acquisition", "content", "conversion"],
+  data: [
+    "data analyst",
+    "data scientist",
+    "data science",
+    "business analyst",
+    "analytics",
+    "sql",
+    "business intelligence",
+    "数据分析",
+    "数据科学",
+    "商业分析",
+    "数据工程",
+  ],
+  "ai-product": [
+    "ai product",
+    "product manager",
+    "product operation",
+    "prompt",
+    "user research",
+    "产品经理",
+    "产品策划",
+    "产品运营",
+    "用户研究",
+  ],
+  frontend: [
+    "frontend",
+    "front end",
+    "full stack",
+    "web developer",
+    "react",
+    "javascript",
+    "typescript",
+    "前端",
+    "全栈",
+    "客户端开发",
+  ],
+  growth: [
+    "growth",
+    "marketing",
+    "business development",
+    "user acquisition",
+    "content operation",
+    "conversion",
+    "增长",
+    "市场",
+    "商务",
+    "运营",
+  ],
 };
 
 const skillLexicon = [
@@ -100,8 +154,14 @@ function normalizeText(value) {
 
 function stripHtml(value) {
   const div = document.createElement("div");
-  div.innerHTML = String(value || "");
-  return div.textContent.replace(/\s+/g, " ").trim();
+  let decoded = String(value || "");
+  for (let index = 0; index < 3; index += 1) {
+    div.innerHTML = decoded;
+    const next = div.textContent;
+    if (next === decoded) break;
+    decoded = next;
+  }
+  return decoded.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function escapeHtml(value) {
@@ -170,9 +230,64 @@ function formatSourceTime(timestamp) {
   });
 }
 
-function inferRoleFromJob(text) {
-  let bestRole = "data";
-  let bestHits = -1;
+function matchesRegion(location, preference) {
+  if (preference === "不限") return true;
+  const text = normalizeText(location);
+  const groups = {
+    remote: ["remote", "worldwide", "global", "anywhere", "远程"],
+    asia: [
+      "asia",
+      "apac",
+      "中国",
+      "北京",
+      "上海",
+      "深圳",
+      "广州",
+      "香港",
+      "成都",
+      "杭州",
+      "新加坡",
+      "日本",
+      "东京",
+      "韩国",
+      "印度",
+      "澳大利亚",
+    ],
+    "north-america": [
+      "united states",
+      "usa",
+      "canada",
+      "mexico",
+      "new york",
+      "california",
+      "san francisco",
+      "帕罗奥多",
+    ],
+    europe: [
+      "europe",
+      "emea",
+      "united kingdom",
+      "ireland",
+      "germany",
+      "france",
+      "netherlands",
+      "spain",
+      "伦敦",
+      "阿姆斯特丹",
+    ],
+  };
+  return (groups[preference] || []).some((term) => text.includes(term));
+}
+
+function inferRoleFromJob(text, title = text) {
+  const normalizedTitle = normalizeText(title);
+  const directMatch = Object.entries(roleTags).find(([, terms]) =>
+    terms.some((term) => normalizedTitle.includes(normalizeText(term)))
+  );
+  if (directMatch) return directMatch[0];
+
+  let bestRole = "unknown";
+  let bestHits = 0;
   Object.entries(roleTags).forEach(([role, terms]) => {
     const hits = countTextHits(text, terms).length;
     if (hits > bestHits) {
@@ -180,7 +295,7 @@ function inferRoleFromJob(text) {
       bestHits = hits;
     }
   });
-  return bestRole;
+  return bestHits >= 2 ? bestRole : "unknown";
 }
 
 function extractSkills(text) {
@@ -188,38 +303,32 @@ function extractSkills(text) {
   return [...new Set(hits)].slice(0, 8);
 }
 
-function normalizeRemotiveJob(raw) {
+function normalizeTencentJob(raw) {
   const description = stripHtml(raw.description);
   const title = raw.title || "Untitled role";
-  const company = raw.company_name || "Unknown company";
-  const allText = `${title} ${company} ${description} ${raw.category || ""} ${raw.job_type || ""}`;
-  const inferredRole = inferRoleFromJob(allText);
+  const company = raw.company || "腾讯";
+  const allText = `${title} ${company} ${description} ${raw.category || ""} ${raw.businessGroup || ""}`;
+  const inferredRole = inferRoleFromJob(allText, title);
   const skills = extractSkills(allText);
-  const remoteRegion = raw.candidate_required_location || "Remote";
+  const location = raw.location || "地区未注明";
 
   return {
-    id: `remotive-${raw.id || raw.url || title}`,
+    id: `tencent-${raw.id}`,
     title,
     company,
-    city: remoteRegion,
+    city: location,
     role: inferredRole,
-    skills: skills.length ? skills : roleTags[inferredRole].slice(0, 5),
-    interests: roleTags[inferredRole].slice(0, 3),
+    skills: skills.length ? skills : ["岗位要求"],
+    interests: roleTags[inferredRole]?.slice(0, 3) || [],
     difficulty: 0.13,
-    summary: description.slice(0, 138) || "公开岗位源暂未提供详细描述。",
+    summary: description.slice(0, 138) || "腾讯招聘官网暂未提供详细岗位描述。",
     url: normalizeExternalUrl(raw.url),
-    source: "Remotive",
-    publishedAt: raw.publication_date,
-    jobType: raw.job_type || raw.category || "Remote",
-    salary: raw.salary || "",
+    source: "腾讯招聘官网",
+    publishedAt: raw.updatedAt,
+    jobType: raw.jobType || "学生岗位",
+    salary: "",
+    careersUrl: "https://careers.tencent.com/",
   };
-}
-
-function buildApiUrl(candidate) {
-  const params = new URLSearchParams({ limit: "50" });
-  const tags = roleTags[candidate.role] || roleTags.data;
-  params.set("search", tags.slice(0, 2).join(" "));
-  return `${REMOTIVE_API}?${params.toString()}`;
 }
 
 async function fetchJsonWithTimeout(url, timeoutMs = 9000) {
@@ -232,6 +341,18 @@ async function fetchJsonWithTimeout(url, timeoutMs = 9000) {
   } finally {
     window.clearTimeout(timeoutId);
   }
+}
+
+async function fetchJsonWithRetry(url, timeoutMs = 16000, attempts = 2) {
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await fetchJsonWithTimeout(url, timeoutMs);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
 }
 
 function readCache(candidate) {
@@ -257,13 +378,23 @@ function writeCache(candidate, jobs) {
   );
 }
 
+async function fetchChinaStudentJobs() {
+  const separator = JOBS_DATA_URL.includes("?") ? "&" : "?";
+  const data = await fetchJsonWithRetry(`${JOBS_DATA_URL}${separator}v=${Date.now()}`, 12000, 2);
+  if (!Array.isArray(data.jobs)) throw new Error("岗位数据格式无效");
+  return {
+    jobs: data.jobs.map(normalizeTencentJob).filter((job) => job.url),
+    updatedAt: data.updatedAt,
+  };
+}
+
 async function loadLiveJobs(candidate, force = false) {
   const cached = !force ? readCache(candidate) : null;
   if (cached) {
     liveJobs = cached.jobs;
     sourceMeta = {
-      label: `Remotive ${liveJobs.length}条`,
-      note: `使用 Remotive 公开岗位源缓存，最后更新 ${formatSourceTime(cached.loadedAt)}。为遵守公开 API 频率限制，缓存保留 6 小时。`,
+      label: `腾讯官网 ${liveJobs.length}岗`,
+      note: `使用腾讯招聘官网岗位缓存，最后更新 ${formatSourceTime(cached.loadedAt)}。点击岗位卡片进入腾讯官方职位或 Workday 申请页面。`,
       loadedAt: cached.loadedAt,
       state: "ready",
     };
@@ -275,19 +406,14 @@ async function loadLiveJobs(candidate, force = false) {
   refreshButton.disabled = true;
 
   try {
-    let data = await fetchJsonWithTimeout(buildApiUrl(candidate));
-    let jobs = Array.isArray(data.jobs) ? data.jobs.map(normalizeRemotiveJob) : [];
-
-    if (jobs.length < 6) {
-      data = await fetchJsonWithTimeout(`${REMOTIVE_API}?limit=50`);
-      jobs = Array.isArray(data.jobs) ? data.jobs.map(normalizeRemotiveJob) : jobs;
-    }
+    const result = await fetchChinaStudentJobs();
+    const jobs = result.jobs;
 
     liveJobs = jobs;
     sourceMeta = jobs.length
       ? {
-          label: `Remotive ${jobs.length}条`,
-          note: "岗位来自 Remotive 官方公开 API，数据约延迟 24 小时；本页标注来源并链接回原始岗位。",
+          label: `腾讯官网 ${jobs.length}岗`,
+          note: `岗位来自腾讯招聘官方接口，数据快照更新于 ${formatSourceTime(result.updatedAt)}。点击岗位卡片进入腾讯官网职位或正式申请页。`,
           loadedAt: Date.now(),
           state: "ready",
         }
@@ -303,7 +429,7 @@ async function loadLiveJobs(candidate, force = false) {
     liveJobs = [];
     sourceMeta = {
       label: "连接失败",
-      note: `无法连接公开岗位源，页面不会展示编造岗位。请点击“刷新岗位”重试。错误：${error.name === "AbortError" ? "请求超时" : error.message}`,
+      note: `无法读取腾讯招聘官网岗位快照，页面不会展示编造岗位。请点击“刷新岗位”重试。错误：${error.name === "AbortError" ? "请求超时" : error.message}`,
       loadedAt: Date.now(),
       state: "error",
     };
@@ -317,7 +443,7 @@ function scoreJob(job, candidate) {
   const interestHits = countHits(candidate, job.interests);
   const roleTextHits = countTextHits(`${job.title} ${job.summary}`, roleTags[candidate.role] || []).length;
   const roleFit = candidate.role === job.role ? 20 : Math.min(14, roleTextHits * 5);
-  const cityFit = candidate.city === "不限" || /remote|worldwide|asia|apac|china/i.test(job.city) ? 10 : 5;
+  const cityFit = matchesRegion(job.city, candidate.city) ? 10 : 4;
   const skillScore = Math.round((skillHits.length / Math.max(1, job.skills.length)) * 32);
   const interestScore = Math.min(14, interestHits.length * 6);
   const evidenceScore = hasQuantifiedEvidence(candidate.resume) ? 9 : 4;
@@ -337,8 +463,9 @@ function scoreJob(job, candidate) {
     missingSkills: job.skills.filter((skill) => !skillHits.includes(skill)).slice(0, 3),
     fit: {
       "技能覆盖": `${skillHits.length}/${job.skills.length}`,
-      "方向贴合": roleFit >= 18 ? "高度相关" : roleFit >= 10 ? "可转向" : `更偏${roleLabels[job.role]}`,
-      "岗位来源": job.source,
+      "方向贴合":
+        roleFit >= 18 ? "高度相关" : roleFit >= 10 ? "可转向" : `更偏${roleLabels[job.role] || "其他方向"}`,
+      "岗位来源": job.company,
       "发布时间": formatDate(job.publishedAt),
     },
   };
@@ -377,7 +504,9 @@ function buildActions(job, candidate, resumeScore) {
       ? "补充组件、状态处理、性能或可访问性细节，证明能进入工程协作。"
       : job.role === "growth"
       ? "把活动目标、用户分层、转化率和复盘结论写清楚。"
-      : "把数据口径、SQL 查询、看板指标和业务结论连起来写。";
+      : job.role === "data"
+      ? "把数据口径、SQL 查询、看板指标和业务结论连起来写。"
+      : "根据岗位原文补充最关键的项目证据，并删除与岗位无关的泛化描述。";
 
   return [
     topMissing.length
@@ -469,11 +598,16 @@ function renderNoJobs() {
     <div class="empty-state">
       <h3>没有展示任何模拟岗位</h3>
       <p>${escapeHtml(sourceMeta.note)}</p>
-      <a href="https://remotive.com/remote-jobs" target="_blank" rel="noopener noreferrer">直接浏览 Remotive 真实岗位库</a>
+      <div class="official-source-links">
+        ${CHINA_CAREER_PORTALS.map(
+          (portal) =>
+            `<a href="${portal.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(portal.company)}校招</a>`
+        ).join("")}
+      </div>
     </div>
   `;
   scoreBreakdown.innerHTML = '<p class="empty-copy">获取到真实岗位后，这里会展示针对该岗位的简历命中率。</p>';
-  resumeActions.innerHTML = "<li>先刷新岗位源，或直接进入 Remotive 岗位库查看真实职位。</li>";
+  resumeActions.innerHTML = "<li>先刷新岗位源，或直接进入上方公司官方 Careers 页面查看职位。</li>";
   agentLog.innerHTML = `<li><strong>岗位源状态：</strong>${escapeHtml(sourceMeta.note)}</li>`;
 }
 

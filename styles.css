@@ -653,6 +653,53 @@ input::placeholder {
   font-weight: 850;
 }
 
+.official-source-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+  margin-top: 10px;
+}
+
+.official-portals {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.official-portals strong {
+  flex: 0 0 auto;
+  color: var(--ink);
+}
+
+.official-portals-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.official-portals-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--canvas);
+  color: var(--primary-strong);
+  font-weight: 800;
+}
+
+.official-portals-links a:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
 .fit-item {
   padding: 10px;
   border-radius: 10px;
@@ -855,6 +902,13 @@ input::placeholder {
   .fit-grid,
   .agent-log {
     grid-template-columns: 1fr;
+  }
+
+  .official-portals {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+    padding-inline: 0;
   }
 
   .score-block {
