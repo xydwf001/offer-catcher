@@ -4,12 +4,12 @@
 
 ## What It Does
 
-- 读取腾讯招聘官网的校园与实习岗位快照，并提供字节跳动、阿里巴巴、美团、百度、京东、华为官方校招入口。
+- 读取腾讯、字节跳动、京东、网易、联想官方招聘岗位快照，并提供华为、阿里巴巴、美团、百度等官方校招入口。
 - 解释岗位匹配分，包括技能、兴趣、城市、简历证据和竞争风险。
 - 计算简历初筛命中率，并指出关键词、项目证据和量化表达缺口。
 - 生成可复制的简历优化建议和投递策略。
 - 展示岗位来源、发布时间和原始岗位链接。
-- 点击岗位卡片直接打开腾讯招聘官网或腾讯 Workday 正式申请页；接口失败时不展示模拟岗位。
+- 支持按公司和国内城市筛选，点击岗位卡片直接打开对应公司官网职位页；接口失败时不展示模拟岗位。
 
 ## Run Locally
 
@@ -25,8 +25,19 @@ Open `http://localhost:4173`.
 - Solution note: `docs/solution.md`
 - PDF: `docs/offer-catcher-solution.pdf`
 - GitHub Pages source: `main` branch, `/` root folder
-- Official job updater: `scripts/update_tencent_jobs.py`
-- Scheduled updater: `.github/workflows/update-jobs.yml` (every 6 hours + manual run)
+- Official job updater: `scripts/update_official_jobs.py`
+- ByteDance snapshot updater: `scripts/update_bytedance_jobs.mjs`
+
+## Refresh Official Jobs
+
+```powershell
+npm install --no-save playwright
+npx playwright install chromium
+node scripts/update_bytedance_jobs.mjs
+python scripts/update_official_jobs.py
+```
+
+The generated `data/china-jobs.json` contains only records returned by official recruitment sites.
 
 ## Deploy
 

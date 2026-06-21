@@ -60,11 +60,14 @@
             <label>
               地区偏好
               <select id="city" name="city">
-                <option value="不限">不限</option>
-                <option value="remote">远程 / 全球</option>
-                <option value="asia">亚洲 / 亚太</option>
-                <option value="north-america">北美</option>
-                <option value="europe">欧洲</option>
+                <option value="全国">全国</option>
+                <option value="北京">北京</option>
+                <option value="上海">上海</option>
+                <option value="深圳">深圳</option>
+                <option value="杭州">杭州</option>
+                <option value="广州">广州</option>
+                <option value="成都">成都</option>
+                <option value="其他国内">其他国内城市</option>
               </select>
             </label>
           </div>
@@ -114,7 +117,15 @@
               <button id="refresh-jobs" class="small-button" type="button">刷新岗位</button>
             </div>
           </div>
+          <div class="source-toolbar">
+            <div>
+              <strong>公司筛选</strong>
+              <span id="result-count">正在读取岗位</span>
+            </div>
+            <div id="company-filters" class="company-filters" aria-label="按公司筛选岗位"></div>
+          </div>
           <div id="job-list" class="job-list"></div>
+          <button id="load-more-jobs" class="load-more-button" type="button" hidden>查看更多岗位</button>
           <div class="official-portals">
             <strong>更多中国大厂校招官网</strong>
             <div class="official-portals-links">
@@ -125,6 +136,8 @@
               <a href="https://talent.baidu.com/jobs/list" target="_blank" rel="noopener noreferrer">百度</a>
               <a href="https://campus.jd.com/" target="_blank" rel="noopener noreferrer">京东</a>
               <a href="https://career.huawei.com/reccampportal/portal5/index.html" target="_blank" rel="noopener noreferrer">华为</a>
+              <a href="https://campus.163.com/" target="_blank" rel="noopener noreferrer">网易</a>
+              <a href="https://talent.lenovo.com.cn/" target="_blank" rel="noopener noreferrer">联想</a>
             </div>
           </div>
         </section>

@@ -1,6 +1,8 @@
-const JOBS_DATA_URL = "data/tencent-jobs.json";
-const CACHE_KEY = "offer-catcher-china-jobs-v4";
+const JOBS_DATA_URL = "data/china-jobs.json";
+const CACHE_KEY = "offer-catcher-china-jobs-v5";
 const CACHE_TTL = 1000 * 60 * 60 * 6;
+const INITIAL_VISIBLE_JOBS = 30;
+const LOAD_MORE_STEP = 24;
 
 const CHINA_CAREER_PORTALS = [
   { company: "腾讯", url: "https://careers.tencent.com/" },
@@ -10,13 +12,15 @@ const CHINA_CAREER_PORTALS = [
   { company: "百度", url: "https://talent.baidu.com/jobs/list" },
   { company: "京东", url: "https://campus.jd.com/" },
   { company: "华为", url: "https://career.huawei.com/reccampportal/portal5/index.html" },
+  { company: "网易", url: "https://campus.163.com/" },
+  { company: "联想", url: "https://talent.lenovo.com.cn/" },
 ];
 
 const defaults = {
   profile:
     "大三信息管理专业，正在找暑期实习。做过校园招聘数据看板，熟悉 Python、SQL、Excel，参与过用户访谈和问卷分析，希望找数据分析或 AI 产品相关岗位。",
   role: "data",
-  city: "不限",
+  city: "全国",
   keywords: "Python, SQL, Excel, 数据看板, 用户访谈, A/B测试",
   resume:
     "校园招聘数据看板项目：使用 Python 清洗 3200 条招聘信息，用 SQL 建立岗位、城市、薪资字段，制作 Excel 数据透视表和 Tableau 看板，帮助社团筛选高匹配岗位。\n\n用户调研项目：访谈 12 名同学，整理求职痛点，输出需求优先级和原型草图。\n\n技能：Python、SQL、Excel、Tableau、问卷分析、原型设计。",
@@ -128,10 +132,15 @@ const statusPill = document.querySelector("#analysis-status");
 const toast = document.querySelector("#toast");
 const refreshButton = document.querySelector("#refresh-jobs");
 const copyActionsButton = document.querySelector("#copy-actions");
+const companyFilters = document.querySelector("#company-filters");
+const resultCount = document.querySelector("#result-count");
+const loadMoreButton = document.querySelector("#load-more-jobs");
 
 let selectedJobId = null;
 let latestRecommendations = [];
 let liveJobs = [];
+let activeCompany = "全部";
+let visibleJobLimit = INITIAL_VISIBLE_JOBS;
 let sourceMeta = {
   label: "连接中",
   note: "正在拉取公开岗位源，并按你的画像重新排序。",
@@ -230,53 +239,53 @@ function formatSourceTime(timestamp) {
   });
 }
 
+function buildSourceLabel(jobs) {
+  const companies = new Set(jobs.map((job) => job.company));
+  return `${companies.size}家官网 ${jobs.length}岗`;
+}
+
+function buildSourceBreakdown(jobs) {
+  const counts = jobs.reduce((result, job) => {
+    result[job.company] = (result[job.company] || 0) + 1;
+    return result;
+  }, {});
+  return Object.entries(counts)
+    .map(([company, count]) => `${company}${count}`)
+    .join("、");
+}
+
 function matchesRegion(location, preference) {
-  if (preference === "不限") return true;
   const text = normalizeText(location);
-  const groups = {
-    remote: ["remote", "worldwide", "global", "anywhere", "远程"],
-    asia: [
-      "asia",
-      "apac",
-      "中国",
-      "北京",
-      "上海",
-      "深圳",
-      "广州",
-      "香港",
-      "成都",
-      "杭州",
-      "新加坡",
-      "日本",
-      "东京",
-      "韩国",
-      "印度",
-      "澳大利亚",
-    ],
-    "north-america": [
-      "united states",
-      "usa",
-      "canada",
-      "mexico",
-      "new york",
-      "california",
-      "san francisco",
-      "帕罗奥多",
-    ],
-    europe: [
-      "europe",
-      "emea",
-      "united kingdom",
-      "ireland",
-      "germany",
-      "france",
-      "netherlands",
-      "spain",
-      "伦敦",
-      "阿姆斯特丹",
-    ],
-  };
-  return (groups[preference] || []).some((term) => text.includes(term));
+  const domesticCities = [
+    "中国",
+    "北京",
+    "上海",
+    "深圳",
+    "广州",
+    "杭州",
+    "成都",
+    "武汉",
+    "南京",
+    "西安",
+    "苏州",
+    "天津",
+    "重庆",
+    "长沙",
+    "厦门",
+    "郑州",
+    "合肥",
+    "青岛",
+    "宁波",
+    "无锡",
+    "珠海",
+    "东莞",
+  ];
+  const isDomestic = domesticCities.some((term) => text.includes(term));
+  if (preference === "全国") return isDomestic;
+  if (preference === "其他国内") {
+    return isDomestic && !["北京", "上海", "深圳", "杭州", "广州", "成都"].some((city) => text.includes(city));
+  }
+  return text.includes(normalizeText(preference));
 }
 
 function inferRoleFromJob(text, title = text) {
@@ -303,17 +312,17 @@ function extractSkills(text) {
   return [...new Set(hits)].slice(0, 8);
 }
 
-function normalizeTencentJob(raw) {
+function normalizeOfficialJob(raw) {
   const description = stripHtml(raw.description);
   const title = raw.title || "Untitled role";
-  const company = raw.company || "腾讯";
+  const company = raw.company || "公司未注明";
   const allText = `${title} ${company} ${description} ${raw.category || ""} ${raw.businessGroup || ""}`;
   const inferredRole = inferRoleFromJob(allText, title);
   const skills = extractSkills(allText);
   const location = raw.location || "地区未注明";
 
   return {
-    id: `tencent-${raw.id}`,
+    id: raw.id,
     title,
     company,
     city: location,
@@ -321,13 +330,13 @@ function normalizeTencentJob(raw) {
     skills: skills.length ? skills : ["岗位要求"],
     interests: roleTags[inferredRole]?.slice(0, 3) || [],
     difficulty: 0.13,
-    summary: description.slice(0, 138) || "腾讯招聘官网暂未提供详细岗位描述。",
+    summary: description.slice(0, 138) || `${company}招聘官网暂未提供详细岗位描述。`,
     url: normalizeExternalUrl(raw.url),
-    source: "腾讯招聘官网",
+    source: raw.source || `${company}招聘官网`,
     publishedAt: raw.updatedAt,
     jobType: raw.jobType || "学生岗位",
     salary: "",
-    careersUrl: "https://careers.tencent.com/",
+    careersUrl: normalizeExternalUrl(raw.careersUrl),
   };
 }
 
@@ -383,8 +392,9 @@ async function fetchChinaStudentJobs() {
   const data = await fetchJsonWithRetry(`${JOBS_DATA_URL}${separator}v=${Date.now()}`, 12000, 2);
   if (!Array.isArray(data.jobs)) throw new Error("岗位数据格式无效");
   return {
-    jobs: data.jobs.map(normalizeTencentJob).filter((job) => job.url),
+    jobs: data.jobs.map(normalizeOfficialJob).filter((job) => job.url),
     updatedAt: data.updatedAt,
+    sources: data.sources || {},
   };
 }
 
@@ -393,8 +403,8 @@ async function loadLiveJobs(candidate, force = false) {
   if (cached) {
     liveJobs = cached.jobs;
     sourceMeta = {
-      label: `腾讯官网 ${liveJobs.length}岗`,
-      note: `使用腾讯招聘官网岗位缓存，最后更新 ${formatSourceTime(cached.loadedAt)}。点击岗位卡片进入腾讯官方职位或 Workday 申请页面。`,
+      label: buildSourceLabel(liveJobs),
+      note: `使用中国大厂官网岗位缓存，最后更新 ${formatSourceTime(cached.loadedAt)}。岗位分布：${buildSourceBreakdown(liveJobs)}。`,
       loadedAt: cached.loadedAt,
       state: "ready",
     };
@@ -412,8 +422,8 @@ async function loadLiveJobs(candidate, force = false) {
     liveJobs = jobs;
     sourceMeta = jobs.length
       ? {
-          label: `腾讯官网 ${jobs.length}岗`,
-          note: `岗位来自腾讯招聘官方接口，数据快照更新于 ${formatSourceTime(result.updatedAt)}。点击岗位卡片进入腾讯官网职位或正式申请页。`,
+          label: buildSourceLabel(jobs),
+          note: `岗位来自中国大厂官方招聘网站，快照更新于 ${formatSourceTime(result.updatedAt)}。岗位分布：${buildSourceBreakdown(jobs)}。`,
           loadedAt: Date.now(),
           state: "ready",
         }
@@ -429,7 +439,7 @@ async function loadLiveJobs(candidate, force = false) {
     liveJobs = [];
     sourceMeta = {
       label: "连接失败",
-      note: `无法读取腾讯招聘官网岗位快照，页面不会展示编造岗位。请点击“刷新岗位”重试。错误：${error.name === "AbortError" ? "请求超时" : error.message}`,
+      note: `无法读取中国大厂官方岗位快照，页面不会展示编造岗位。请点击“刷新岗位”重试。错误：${error.name === "AbortError" ? "请求超时" : error.message}`,
       loadedAt: Date.now(),
       state: "error",
     };
@@ -443,7 +453,8 @@ function scoreJob(job, candidate) {
   const interestHits = countHits(candidate, job.interests);
   const roleTextHits = countTextHits(`${job.title} ${job.summary}`, roleTags[candidate.role] || []).length;
   const roleFit = candidate.role === job.role ? 20 : Math.min(14, roleTextHits * 5);
-  const cityFit = matchesRegion(job.city, candidate.city) ? 10 : 4;
+  const cityFit = matchesRegion(job.city, candidate.city) ? 10 : 2;
+  const domesticBoost = matchesRegion(job.city, "全国") ? 5 : 0;
   const skillScore = Math.round((skillHits.length / Math.max(1, job.skills.length)) * 32);
   const interestScore = Math.min(14, interestHits.length * 6);
   const evidenceScore = hasQuantifiedEvidence(candidate.resume) ? 9 : 4;
@@ -452,7 +463,18 @@ function scoreJob(job, candidate) {
   const penalty = Math.round(job.difficulty * 12);
   const total = Math.max(
     24,
-    Math.min(98, skillScore + interestScore + roleFit + cityFit + evidenceScore + keywordBoost + freshnessBoost - penalty)
+    Math.min(
+      98,
+      skillScore +
+        interestScore +
+        roleFit +
+        cityFit +
+        domesticBoost +
+        evidenceScore +
+        keywordBoost +
+        freshnessBoost -
+        penalty
+    )
   );
 
   return {
@@ -518,6 +540,40 @@ function buildActions(job, candidate, resumeScore) {
       : "保留量化结果，把最强数字放在项目句子的前半段。",
     job.url ? `打开原始岗位链接，核对 JD 后再定制投递材料：${job.url}` : "先核对岗位原文，再投递。",
   ];
+}
+
+function renderCompanyFilters() {
+  const preferredOrder = ["腾讯", "字节跳动", "京东", "网易", "联想"];
+  const counts = liveJobs.reduce((result, job) => {
+    result[job.company] = (result[job.company] || 0) + 1;
+    return result;
+  }, {});
+  const companies = preferredOrder.filter((company) => counts[company]);
+
+  companyFilters.innerHTML = ["全部", ...companies]
+    .map((company) => {
+      const count = company === "全部" ? liveJobs.length : counts[company];
+      return `
+        <button
+          class="company-filter${activeCompany === company ? " is-active" : ""}"
+          type="button"
+          data-company="${escapeHtml(company)}"
+          aria-pressed="${activeCompany === company}"
+        >
+          ${escapeHtml(company)} <span>${count}</span>
+        </button>
+      `;
+    })
+    .join("");
+
+  companyFilters.querySelectorAll(".company-filter").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeCompany = button.dataset.company;
+      visibleJobLimit = INITIAL_VISIBLE_JOBS;
+      selectedJobId = null;
+      render(readCandidate());
+    });
+  });
 }
 
 function renderJobs(recommendations, candidate) {
@@ -591,6 +647,9 @@ function renderNoJobs() {
   jobSourceNote.textContent = sourceMeta.note;
   statusPill.textContent = sourceMeta.state === "error" ? "连接失败" : "暂无结果";
   copyActionsButton.disabled = true;
+  resultCount.textContent = "暂无可展示岗位";
+  companyFilters.innerHTML = "";
+  loadMoreButton.hidden = true;
   latestRecommendations = [];
   selectedJobId = null;
 
@@ -649,8 +708,18 @@ function render(candidate = readCandidate()) {
     return;
   }
 
-  const recommendations = liveJobs.map((job) => scoreJob(job, candidate)).sort((a, b) => b.score - a.score);
+  renderCompanyFilters();
+  const allRecommendations = liveJobs.map((job) => scoreJob(job, candidate)).sort((a, b) => b.score - a.score);
+  if (activeCompany !== "全部" && !allRecommendations.some((job) => job.company === activeCompany)) {
+    activeCompany = "全部";
+    renderCompanyFilters();
+  }
+  const recommendations =
+    activeCompany === "全部"
+      ? allRecommendations
+      : allRecommendations.filter((job) => job.company === activeCompany);
   latestRecommendations = recommendations;
+  const visibleRecommendations = recommendations.slice(0, visibleJobLimit);
 
   if (!recommendations.some((job) => job.id === selectedJobId)) {
     selectedJobId = recommendations[0].id;
@@ -667,8 +736,10 @@ function render(candidate = readCandidate()) {
   jobSourceNote.textContent = sourceMeta.note;
   statusPill.textContent = "真实岗位源";
   copyActionsButton.disabled = false;
+  resultCount.textContent = `展示 ${visibleRecommendations.length} / ${recommendations.length} 个匹配岗位`;
+  loadMoreButton.hidden = visibleRecommendations.length >= recommendations.length;
 
-  renderJobs(recommendations, candidate);
+  renderJobs(visibleRecommendations, candidate);
   renderBreakdown(resumeScore);
   resumeActions.innerHTML = actions.map((action) => `<li>${escapeHtml(action)}</li>`).join("");
   renderLog(selectedJob, recommendations, resumeScore);
@@ -688,7 +759,8 @@ function render(candidate = readCandidate()) {
 function loadValues(values) {
   profileInput.value = values.profile;
   roleInput.value = values.role;
-  cityInput.value = values.city;
+  const validCities = Array.from(cityInput.options).map((option) => option.value);
+  cityInput.value = validCities.includes(values.city) ? values.city : "全国";
   keywordsInput.value = values.keywords;
   resumeInput.value = values.resume;
 }
@@ -703,6 +775,7 @@ function showToast(message) {
 async function refreshJobs(force = false) {
   const candidate = readCandidate();
   await loadLiveJobs(candidate, force);
+  visibleJobLimit = INITIAL_VISIBLE_JOBS;
   selectedJobId = liveJobs[0]?.id || null;
   render(candidate);
 }
@@ -716,6 +789,7 @@ form.addEventListener("submit", async (event) => {
     showToast("没有获取到真实岗位，请重试或调整方向。");
     return;
   }
+  visibleJobLimit = INITIAL_VISIBLE_JOBS;
   const nextTop = liveJobs.map((job) => scoreJob(job, candidate)).sort((a, b) => b.score - a.score)[0];
   selectedJobId = nextTop?.id || null;
   render(candidate);
@@ -725,6 +799,11 @@ form.addEventListener("submit", async (event) => {
 refreshButton.addEventListener("click", async () => {
   await refreshJobs(true);
   showToast("岗位源已刷新。");
+});
+
+loadMoreButton.addEventListener("click", () => {
+  visibleJobLimit += LOAD_MORE_STEP;
+  render(readCandidate());
 });
 
 document.querySelector("#load-sample").addEventListener("click", async () => {
