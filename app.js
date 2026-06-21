@@ -27,13 +27,27 @@ const defaults = {
 };
 
 const roleLabels = {
-  data: "数据分析",
-  "ai-product": "AI 产品经理",
-  frontend: "前端开发",
-  growth: "用户增长运营",
+  general: "综合探索",
+  data: "数据与商业分析",
+  "ai-product": "AI 产品与大模型应用",
+  product: "产品经理与项目管理",
+  frontend: "软件研发与互联网技术",
+  growth: "运营与用户增长",
+  marketing: "市场、品牌与内容传播",
+  sales: "销售、商务与客户成功",
+  consulting: "咨询、战略与管培生",
+  finance: "财务、金融与审计",
+  hr: "人力资源与行政",
+  "supply-chain": "供应链、采购与物流",
+  design: "设计、创意与用户体验",
+  engineering: "硬件、工程与智能制造",
+  education: "教育、培训与课程研发",
+  healthcare: "医疗、健康与生命科学",
+  legal: "法务、合规与风险管理",
 };
 
 const roleTags = {
+  general: [],
   data: [
     "data analyst",
     "data scientist",
@@ -49,42 +63,201 @@ const roleTags = {
   ],
   "ai-product": [
     "ai product",
-    "product manager",
-    "product operation",
+    "ai产品",
+    "大模型产品",
+    "智能产品",
+    "agent产品",
     "prompt",
-    "user research",
+    "aigc产品",
+    "模型应用",
+  ],
+  product: [
+    "product manager",
+    "product management",
+    "project manager",
+    "project management",
     "产品经理",
     "产品策划",
-    "产品运营",
-    "用户研究",
+    "产品",
+    "项目管理",
+    "需求分析",
   ],
   frontend: [
     "frontend",
     "front end",
+    "backend",
+    "back end",
     "full stack",
+    "software engineer",
+    "software development",
     "web developer",
     "react",
     "javascript",
     "typescript",
     "前端",
+    "后端",
     "全栈",
+    "软件开发",
+    "研发工程师",
     "客户端开发",
   ],
   growth: [
     "growth",
-    "marketing",
-    "business development",
     "user acquisition",
     "content operation",
     "conversion",
     "增长",
-    "市场",
-    "商务",
     "运营",
+    "用户运营",
+    "内容运营",
+    "平台运营",
+    "游戏运营",
+    "社群运营",
+  ],
+  marketing: [
+    "marketing",
+    "brand",
+    "public relations",
+    "communications",
+    "市场",
+    "品牌",
+    "营销",
+    "公关",
+    "内容传播",
+    "新媒体",
+  ],
+  sales: [
+    "sales",
+    "account representative",
+    "business development",
+    "customer success",
+    "销售",
+    "商务拓展",
+    "客户成功",
+    "客户经理",
+    "渠道",
+  ],
+  consulting: [
+    "consulting",
+    "strategy",
+    "management trainee",
+    "business operations",
+    "咨询",
+    "战略",
+    "管培生",
+    "经营管理",
+    "商业运营",
+  ],
+  finance: [
+    "finance",
+    "financial",
+    "accounting",
+    "audit",
+    "internal control",
+    "财务",
+    "会计",
+    "审计",
+    "内控",
+    "金融",
+    "投资",
+  ],
+  hr: [
+    "human resources",
+    "talent acquisition",
+    "people operations",
+    "hr intern",
+    "人力资源",
+    "招聘",
+    "培训",
+    "组织发展",
+    "行政",
+  ],
+  "supply-chain": [
+    "supply chain",
+    "procurement",
+    "logistics",
+    "purchasing",
+    "供应链",
+    "采购",
+    "物流",
+    "仓储",
+    "库存",
+    "采销",
+  ],
+  design: [
+    "user experience",
+    "ux design",
+    "ui design",
+    "visual design",
+    "game art",
+    "设计",
+    "交互",
+    "用户体验",
+    "视觉",
+    "美术",
+    "视频制作",
+  ],
+  engineering: [
+    "hardware engineering",
+    "mechanical",
+    "electrical",
+    "manufacturing",
+    "camera engineer",
+    "硬件",
+    "机械",
+    "结构设计",
+    "工业工程",
+    "智能制造",
+    "质量工程",
+    "设备维养",
+  ],
+  education: [
+    "teacher",
+    "education",
+    "curriculum",
+    "teaching",
+    "教师",
+    "老师",
+    "教育",
+    "课程研发",
+    "教学",
+    "学业规划",
+  ],
+  healthcare: [
+    "medical",
+    "healthcare",
+    "doctor",
+    "pharmacy",
+    "nurse",
+    "医疗",
+    "医师",
+    "护理",
+    "药房",
+    "药学",
+    "临床",
+    "健康",
+  ],
+  legal: [
+    "legal",
+    "compliance",
+    "risk control",
+    "法务",
+    "合规",
+    "风控",
+    "合同审核",
+    "知识产权",
   ],
 };
 
 const skillLexicon = [
+  "Office",
+  "Word",
+  "PPT",
+  "英语",
+  "沟通表达",
+  "团队协作",
+  "项目管理",
+  "行业研究",
   "SQL",
   "Python",
   "Excel",
@@ -96,9 +269,15 @@ const skillLexicon = [
   "原型设计",
   "Prompt",
   "AIGC",
+  "大模型",
   "用户访谈",
+  "市场调研",
+  "竞品分析",
+  "商业分析",
   "JavaScript",
   "TypeScript",
+  "Java",
+  "C++",
   "React",
   "Vue",
   "CSS",
@@ -111,13 +290,114 @@ const skillLexicon = [
   "转化率",
   "SEO",
   "CRM",
+  "品牌策划",
+  "新媒体运营",
+  "文案写作",
+  "短视频",
+  "商务拓展",
+  "客户关系",
+  "谈判",
+  "财务分析",
+  "会计",
+  "审计",
+  "成本管理",
+  "招聘",
+  "培训",
+  "绩效管理",
+  "人力资源",
+  "供应链",
+  "采购",
+  "库存管理",
+  "物流规划",
+  "Figma",
+  "Photoshop",
+  "Illustrator",
+  "视频剪辑",
+  "教学设计",
+  "课程研发",
+  "临床",
+  "护理",
+  "药学",
+  "法务",
+  "合同审核",
+  "风险控制",
+  "CAD",
+  "机械设计",
+  "硬件",
+  "质量管理",
+  "信息检索",
+  "活动组织",
+  "产品规划",
+  "PRD",
+  "模型评测",
+  "Agent",
+  "Git",
+  "数据库",
+  "社群运营",
+  "数据复盘",
+  "用户增长",
+  "公关传播",
+  "媒介投放",
+  "销售分析",
+  "渠道管理",
+  "方案演示",
+  "客户成功",
+  "结构化思维",
+  "案例分析",
+  "战略规划",
+  "财务建模",
+  "预算管理",
+  "组织发展",
+  "员工关系",
+  "供应商管理",
+  "需求预测",
+  "交互设计",
+  "视觉设计",
+  "作品集",
+  "结构设计",
+  "生产制造",
+  "课堂管理",
+  "教育心理",
+  "内容制作",
+  "学习规划",
+  "教师资格证",
+  "健康管理",
+  "医学研究",
+  "患者沟通",
+  "执业资格",
+  "法律检索",
+  "知识产权",
+  "文书写作",
 ];
+
+const commonKeywordSuggestions = ["沟通表达", "团队协作", "项目管理", "英语", "Excel"];
+
+const keywordSuggestionsByRole = {
+  general: ["Office", "PPT", "行业研究", "信息检索", "文案写作", "活动组织", "数据整理", "公众表达"],
+  data: ["SQL", "Python", "Excel", "Tableau", "Power BI", "商业分析", "指标体系", "数据可视化", "A/B测试"],
+  "ai-product": ["Prompt", "AIGC", "大模型", "需求分析", "原型设计", "用户访谈", "竞品分析", "模型评测", "Agent"],
+  product: ["需求分析", "原型设计", "用户访谈", "竞品分析", "项目管理", "产品规划", "PRD", "用户体验"],
+  frontend: ["JavaScript", "TypeScript", "React", "Vue", "Java", "C++", "Python", "Git", "数据库"],
+  growth: ["内容运营", "活动策划", "用户分层", "转化率", "A/B测试", "社群运营", "数据复盘", "用户增长"],
+  marketing: ["市场调研", "品牌策划", "新媒体运营", "文案写作", "短视频", "公关传播", "SEO", "媒介投放"],
+  sales: ["商务拓展", "客户关系", "谈判", "CRM", "销售分析", "渠道管理", "方案演示", "客户成功"],
+  consulting: ["行业研究", "商业分析", "PPT", "Excel", "结构化思维", "案例分析", "战略规划", "项目管理"],
+  finance: ["财务分析", "会计", "审计", "成本管理", "Excel", "财务建模", "预算管理", "风险控制"],
+  hr: ["招聘", "培训", "绩效管理", "人力资源", "组织发展", "员工关系", "Excel", "活动组织"],
+  "supply-chain": ["供应链", "采购", "库存管理", "物流规划", "Excel", "成本管理", "供应商管理", "需求预测"],
+  design: ["Figma", "Photoshop", "Illustrator", "用户体验", "交互设计", "视觉设计", "视频剪辑", "作品集"],
+  engineering: ["CAD", "机械设计", "硬件", "质量管理", "C++", "项目管理", "结构设计", "生产制造"],
+  education: ["教学设计", "课程研发", "课堂管理", "公众表达", "教育心理", "内容制作", "学习规划", "教师资格证"],
+  healthcare: ["临床", "护理", "药学", "健康管理", "医学研究", "患者沟通", "数据整理", "执业资格"],
+  legal: ["法务", "合同审核", "风险控制", "合规", "法律检索", "知识产权", "文书写作", "英语"],
+};
 
 const form = document.querySelector("#profile-form");
 const profileInput = document.querySelector("#profile");
 const roleInput = document.querySelector("#role");
 const cityInput = document.querySelector("#city");
 const keywordsInput = document.querySelector("#keywords");
+const keywordSuggestions = document.querySelector("#keyword-suggestions");
 const resumeInput = document.querySelector("#resume");
 const jobList = document.querySelector("#job-list");
 const topRole = document.querySelector("#top-role");
@@ -191,13 +471,17 @@ function normalizeExternalUrl(value) {
   }
 }
 
+function parseKeywords(value) {
+  return String(value || "")
+    .split(/[,，、；;\n]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function readCandidate() {
   const profile = profileInput.value.trim();
   const resume = resumeInput.value.trim();
-  const keywords = keywordsInput.value
-    .split(/[,，、\s]+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const keywords = parseKeywords(keywordsInput.value);
 
   return {
     profile,
@@ -207,6 +491,42 @@ function readCandidate() {
     keywords,
     text: normalizeText(`${profile} ${resume} ${keywords.join(" ")}`),
   };
+}
+
+function renderKeywordSuggestions() {
+  const selectedKeywords = parseKeywords(keywordsInput.value);
+  const selectedNormalized = new Set(selectedKeywords.map(normalizeText));
+  const roleSuggestions = keywordSuggestionsByRole[roleInput.value] || keywordSuggestionsByRole.general;
+  const suggestions = [...new Set([...commonKeywordSuggestions, ...roleSuggestions])];
+
+  keywordSuggestions.innerHTML = suggestions
+    .map((keyword) => {
+      const isSelected = selectedNormalized.has(normalizeText(keyword));
+      return `
+        <button
+          class="keyword-chip${isSelected ? " is-selected" : ""}"
+          type="button"
+          data-keyword="${escapeHtml(keyword)}"
+          aria-pressed="${isSelected}"
+        >
+          ${isSelected ? "已选 " : "+ "}${escapeHtml(keyword)}
+        </button>
+      `;
+    })
+    .join("");
+
+  keywordSuggestions.querySelectorAll(".keyword-chip").forEach((button) => {
+    button.addEventListener("click", () => {
+      const keyword = button.dataset.keyword;
+      const current = parseKeywords(keywordsInput.value);
+      const exists = current.some((item) => normalizeText(item) === normalizeText(keyword));
+      const next = exists
+        ? current.filter((item) => normalizeText(item) !== normalizeText(keyword))
+        : [...current, keyword];
+      keywordsInput.value = next.join(", ");
+      renderKeywordSuggestions();
+    });
+  });
 }
 
 function countHits(candidate, terms) {
@@ -290,10 +610,18 @@ function matchesRegion(location, preference) {
 
 function inferRoleFromJob(text, title = text) {
   const normalizedTitle = normalizeText(title);
-  const directMatch = Object.entries(roleTags).find(([, terms]) =>
-    terms.some((term) => normalizedTitle.includes(normalizeText(term)))
-  );
-  if (directMatch) return directMatch[0];
+  let titleRole = "unknown";
+  let titleScore = 0;
+  Object.entries(roleTags).forEach(([role, terms]) => {
+    const score = terms
+      .filter((term) => normalizedTitle.includes(normalizeText(term)))
+      .reduce((total, term) => total + normalizeText(term).replace(/\s+/g, "").length, 0);
+    if (score > titleScore) {
+      titleRole = role;
+      titleScore = score;
+    }
+  });
+  if (titleScore > 0) return titleRole;
 
   let bestRole = "unknown";
   let bestHits = 0;
@@ -452,7 +780,8 @@ function scoreJob(job, candidate) {
   const skillHits = countHits(candidate, job.skills);
   const interestHits = countHits(candidate, job.interests);
   const roleTextHits = countTextHits(`${job.title} ${job.summary}`, roleTags[candidate.role] || []).length;
-  const roleFit = candidate.role === job.role ? 20 : Math.min(14, roleTextHits * 5);
+  const roleFit =
+    candidate.role === "general" ? 10 : candidate.role === job.role ? 20 : Math.min(14, roleTextHits * 5);
   const cityFit = matchesRegion(job.city, candidate.city) ? 10 : 2;
   const domesticBoost = matchesRegion(job.city, "全国") ? 5 : 0;
   const skillScore = Math.round((skillHits.length / Math.max(1, job.skills.length)) * 32);
@@ -486,7 +815,13 @@ function scoreJob(job, candidate) {
     fit: {
       "技能覆盖": `${skillHits.length}/${job.skills.length}`,
       "方向贴合":
-        roleFit >= 18 ? "高度相关" : roleFit >= 10 ? "可转向" : `更偏${roleLabels[job.role] || "其他方向"}`,
+        candidate.role === "general"
+          ? "综合探索"
+          : roleFit >= 18
+          ? "高度相关"
+          : roleFit >= 10
+          ? "可转向"
+          : `更偏${roleLabels[job.role] || "其他方向"}`,
       "岗位来源": job.company,
       "发布时间": formatDate(job.publishedAt),
     },
@@ -497,7 +832,7 @@ function scoreResume(job, candidate) {
   const skillHits = countHits(candidate, job.skills);
   const projectEvidence = /项目|看板|原型|访谈|活动|组件|系统|平台/.test(candidate.resume) ? 78 : 42;
   const quantified = hasQuantifiedEvidence(candidate.resume) ? 86 : 48;
-  const roleIntent = candidate.role === job.role ? 86 : 62;
+  const roleIntent = candidate.role === "general" ? 74 : candidate.role === job.role ? 86 : 62;
   const keywordCoverage = Math.round((skillHits.length / Math.max(1, job.skills.length)) * 100);
   const readability = candidate.resume.length > 80 && candidate.resume.length < 900 ? 82 : 62;
   const total = Math.round(
@@ -519,16 +854,26 @@ function scoreResume(job, candidate) {
 function buildActions(job, candidate, resumeScore) {
   const missing = job.skills.filter((skill) => !candidate.text.includes(normalizeText(skill)));
   const topMissing = missing.slice(0, 3);
+  const roleAdvice = {
+    data: "把数据口径、分析方法、核心指标和业务结论连起来写。",
+    "ai-product": "把用户问题、模型能力、评测方式和产品结果写成一条完整链路。",
+    product: "写清需求来源、方案取舍、项目协作和最终交付结果。",
+    frontend: "补充技术选型、工程实现、性能优化或质量保障细节。",
+    growth: "把用户分层、运营动作、转化指标和复盘结论写清楚。",
+    marketing: "展示目标人群、传播策略、内容产出和曝光转化结果。",
+    sales: "写清客户需求、跟进过程、解决方案和成交或留存结果。",
+    consulting: "用问题拆解、研究过程、分析框架和建议落地证明结构化能力。",
+    finance: "补充报表分析、预算成本、审计核对或风险识别的具体证据。",
+    hr: "写清招聘培训、员工沟通、活动组织或效率提升的实际结果。",
+    "supply-chain": "展示采购、库存、物流、供应商或成本效率的优化过程。",
+    design: "用作品目标、设计过程、用户反馈和迭代结果证明设计能力。",
+    engineering: "写清工程约束、设计验证、质量指标和问题解决过程。",
+    education: "补充教学对象、课程设计、授课方法和学习效果反馈。",
+    healthcare: "突出专业规范、服务对象、操作流程和安全质量意识。",
+    legal: "补充法规检索、合同审核、风险识别和合规建议的实践证据。",
+  };
   const roleLine =
-    job.role === "ai-product"
-      ? "把用户访谈、Prompt 设计和原型结果写成同一条项目链路。"
-      : job.role === "frontend"
-      ? "补充组件、状态处理、性能或可访问性细节，证明能进入工程协作。"
-      : job.role === "growth"
-      ? "把活动目标、用户分层、转化率和复盘结论写清楚。"
-      : job.role === "data"
-      ? "把数据口径、SQL 查询、看板指标和业务结论连起来写。"
-      : "根据岗位原文补充最关键的项目证据，并删除与岗位无关的泛化描述。";
+    roleAdvice[job.role] || "根据岗位原文补充最关键的项目证据，并删除与岗位无关的泛化描述。";
 
   return [
     topMissing.length
@@ -758,11 +1103,13 @@ function render(candidate = readCandidate()) {
 
 function loadValues(values) {
   profileInput.value = values.profile;
-  roleInput.value = values.role;
+  const validRoles = Array.from(roleInput.options).map((option) => option.value);
+  roleInput.value = validRoles.includes(values.role) ? values.role : "general";
   const validCities = Array.from(cityInput.options).map((option) => option.value);
   cityInput.value = validCities.includes(values.city) ? values.city : "全国";
   keywordsInput.value = values.keywords;
   resumeInput.value = values.resume;
+  renderKeywordSuggestions();
 }
 
 function showToast(message) {
@@ -805,6 +1152,9 @@ loadMoreButton.addEventListener("click", () => {
   visibleJobLimit += LOAD_MORE_STEP;
   render(readCandidate());
 });
+
+roleInput.addEventListener("change", renderKeywordSuggestions);
+keywordsInput.addEventListener("input", renderKeywordSuggestions);
 
 document.querySelector("#load-sample").addEventListener("click", async () => {
   loadValues(defaults);

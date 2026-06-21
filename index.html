@@ -36,9 +36,9 @@
             输入你的背景、偏好和简历文本，智能体会给出岗位优先级、初筛命中率和可执行的简历修改建议。
           </p>
           <div class="capability-row" aria-label="核心能力">
-            <span>岗位排序</span>
+            <span>17 类职业方向</span>
             <span>命中率诊断</span>
-            <span>简历改写方向</span>
+            <span>简历改写建议</span>
           </div>
         </div>
 
@@ -50,10 +50,29 @@
             <label>
               目标方向
               <select id="role" name="role">
-                <option value="data">数据分析</option>
-                <option value="ai-product">AI 产品经理</option>
-                <option value="frontend">前端开发</option>
-                <option value="growth">用户增长运营</option>
+                <option value="general">综合探索 / 暂未确定</option>
+                <optgroup label="互联网、产品与数据">
+                  <option value="data">数据与商业分析</option>
+                  <option value="ai-product">AI 产品与大模型应用</option>
+                  <option value="product">产品经理与项目管理</option>
+                  <option value="frontend">软件研发与互联网技术</option>
+                  <option value="growth">运营与用户增长</option>
+                </optgroup>
+                <optgroup label="商业与企业职能">
+                  <option value="marketing">市场、品牌与内容传播</option>
+                  <option value="sales">销售、商务与客户成功</option>
+                  <option value="consulting">咨询、战略与管培生</option>
+                  <option value="finance">财务、金融与审计</option>
+                  <option value="hr">人力资源与行政</option>
+                  <option value="supply-chain">供应链、采购与物流</option>
+                </optgroup>
+                <optgroup label="专业与行业方向">
+                  <option value="design">设计、创意与用户体验</option>
+                  <option value="engineering">硬件、工程与智能制造</option>
+                  <option value="education">教育、培训与课程研发</option>
+                  <option value="healthcare">医疗、健康与生命科学</option>
+                  <option value="legal">法务、合规与风险管理</option>
+                </optgroup>
               </select>
             </label>
 
@@ -73,7 +92,20 @@
           </div>
 
           <label for="keywords">能力关键词</label>
-          <input id="keywords" name="keywords" type="text" />
+          <input
+            id="keywords"
+            name="keywords"
+            type="text"
+            aria-describedby="keyword-help"
+            placeholder="输入技能、证书、工具或行业经验，用逗号分隔"
+          />
+          <div class="keyword-suggestion-panel">
+            <div class="keyword-suggestion-heading">
+              <strong>快捷补充</strong>
+              <small id="keyword-help">点击标签添加或移除，仍可自由输入其他能力</small>
+            </div>
+            <div id="keyword-suggestions" class="keyword-suggestions" aria-label="推荐能力关键词"></div>
+          </div>
 
           <label for="resume">简历文本</label>
           <textarea id="resume" name="resume" rows="9"></textarea>
