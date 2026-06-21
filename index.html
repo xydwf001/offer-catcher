@@ -11,6 +11,10 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="ambient-glow ambient-glow-one" aria-hidden="true"></div>
+    <div class="ambient-glow ambient-glow-two" aria-hidden="true"></div>
+    <div class="ambient-glow ambient-glow-three" aria-hidden="true"></div>
+
     <header class="app-header">
       <a class="brand" href="#top" aria-label="Offer 捕手首页">
         <span class="brand-mark" aria-hidden="true">O</span>
@@ -24,14 +28,16 @@
         <a href="#resume-insights">简历诊断</a>
         <a href="#strategy">投递策略</a>
       </nav>
-      <span class="header-chip">公开 Demo</span>
+      <span class="header-chip"><i aria-hidden="true"></i>公开 Demo</span>
     </header>
 
     <main id="top" class="workspace">
       <section class="input-panel" aria-labelledby="profile-title">
         <div class="panel-heading">
           <p class="section-label">Offer 捕手工作台</p>
-          <h1 id="profile-title">把简历和目标岗位放到同一张桌面上。</h1>
+          <h1 id="profile-title">
+            把<span class="hero-accent">简历</span>和<span class="hero-accent">目标岗位</span>放到同一张桌面上。
+          </h1>
           <p>
             输入你的背景、偏好和简历文本，智能体会给出岗位优先级、初筛命中率和可执行的简历修改建议。
           </p>
@@ -119,25 +125,31 @@
 
       <section class="results-panel" aria-live="polite">
         <div class="summary-strip">
-          <div>
+          <div class="kpi-card kpi-role">
             <span class="metric-label">最推荐岗位</span>
             <strong id="top-role">等待分析</strong>
+            <small>基于当前画像与真实岗位排序</small>
           </div>
-          <div>
+          <div class="kpi-card kpi-score">
             <span class="metric-label">匹配分</span>
             <strong id="top-score">--</strong>
+            <small>技能、方向与地区综合评分</small>
+            <span class="kpi-progress" aria-hidden="true"><i id="top-score-progress"></i></span>
           </div>
-          <div>
+          <div class="kpi-card kpi-screen">
             <span class="metric-label">初筛命中率</span>
             <strong id="screen-score">--</strong>
+            <small>简历证据覆盖程度</small>
+            <span class="kpi-progress" aria-hidden="true"><i id="screen-score-progress"></i></span>
           </div>
-          <div>
+          <div class="kpi-card kpi-source">
             <span class="metric-label">岗位源</span>
             <strong id="source-status">连接中</strong>
+            <small>中国大厂官方招聘快照</small>
           </div>
         </div>
 
-        <section id="matches" class="module" aria-labelledby="matches-title">
+        <section id="matches" class="module matches-module" aria-labelledby="matches-title">
           <div class="module-heading">
             <div>
               <p class="section-label">岗位匹配</p>
@@ -175,9 +187,10 @@
         </section>
 
         <section id="resume-insights" class="module split-module" aria-labelledby="resume-title">
-          <div>
+          <div class="diagnosis-panel">
             <p class="section-label">简历诊断</p>
             <h2 id="resume-title">初筛命中率拆解</h2>
+            <p class="diagnosis-copy">查看关键词、项目证据和表达质量分别影响了多少分。</p>
             <div id="score-breakdown" class="breakdown"></div>
           </div>
           <div class="action-box">

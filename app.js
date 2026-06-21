@@ -403,6 +403,8 @@ const jobList = document.querySelector("#job-list");
 const topRole = document.querySelector("#top-role");
 const topScore = document.querySelector("#top-score");
 const screenScore = document.querySelector("#screen-score");
+const topScoreProgress = document.querySelector("#top-score-progress");
+const screenScoreProgress = document.querySelector("#screen-score-progress");
 const sourceStatus = document.querySelector("#source-status");
 const jobSourceNote = document.querySelector("#job-source-note");
 const scoreBreakdown = document.querySelector("#score-breakdown");
@@ -415,6 +417,7 @@ const copyActionsButton = document.querySelector("#copy-actions");
 const companyFilters = document.querySelector("#company-filters");
 const resultCount = document.querySelector("#result-count");
 const loadMoreButton = document.querySelector("#load-more-jobs");
+const resultsPanel = document.querySelector(".results-panel");
 
 let selectedJobId = null;
 let latestRecommendations = [];
@@ -715,6 +718,21 @@ function writeCache(candidate, jobs) {
   );
 }
 
+function setDashboardLoading(isLoading) {
+  resultsPanel.classList.toggle("is-loading", isLoading);
+  resultsPanel.setAttribute("aria-busy", String(isLoading));
+}
+
+function setSourceVisualState(state) {
+  resultsPanel.dataset.sourceState = state;
+  statusPill.dataset.state = state;
+}
+
+function updateKpiProgress(matchScore = 0, resumeScore = 0) {
+  topScoreProgress.style.width = `${Math.max(0, Math.min(100, matchScore))}%`;
+  screenScoreProgress.style.width = `${Math.max(0, Math.min(100, resumeScore))}%`;
+}
+
 async function fetchChinaStudentJobs() {
   const separator = JOBS_DATA_URL.includes("?") ? "&" : "?";
   const data = await fetchJsonWithRetry(`${JOBS_DATA_URL}${separator}v=${Date.now()}`, 12000, 2);
@@ -742,6 +760,8 @@ async function loadLiveJobs(candidate, force = false) {
   statusPill.textContent = "拉取岗位源";
   sourceStatus.textContent = "连接中";
   refreshButton.disabled = true;
+  setSourceVisualState("loading");
+  setDashboardLoading(true);
 
   try {
     const result = await fetchChinaStudentJobs();
@@ -773,6 +793,7 @@ async function loadLiveJobs(candidate, force = false) {
     };
   } finally {
     refreshButton.disabled = false;
+    setDashboardLoading(false);
   }
 }
 
@@ -988,9 +1009,11 @@ function renderNoJobs() {
   topRole.textContent = "暂无真实岗位";
   topScore.textContent = "--";
   screenScore.textContent = "--";
+  updateKpiProgress();
   sourceStatus.textContent = sourceMeta.label;
   jobSourceNote.textContent = sourceMeta.note;
   statusPill.textContent = sourceMeta.state === "error" ? "连接失败" : "暂无结果";
+  setSourceVisualState(sourceMeta.state);
   copyActionsButton.disabled = true;
   resultCount.textContent = "暂无可展示岗位";
   companyFilters.innerHTML = "";
@@ -1077,9 +1100,11 @@ function render(candidate = readCandidate()) {
   topRole.textContent = `${recommendations[0].title}`;
   topScore.textContent = `${recommendations[0].score}`;
   screenScore.textContent = `${resumeScore.total}`;
+  updateKpiProgress(recommendations[0].score, resumeScore.total);
   sourceStatus.textContent = sourceMeta.label;
   jobSourceNote.textContent = sourceMeta.note;
   statusPill.textContent = "真实岗位源";
+  setSourceVisualState("ready");
   copyActionsButton.disabled = false;
   resultCount.textContent = `展示 ${visibleRecommendations.length} / ${recommendations.length} 个匹配岗位`;
   loadMoreButton.hidden = visibleRecommendations.length >= recommendations.length;
